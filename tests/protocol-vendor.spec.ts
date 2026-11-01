@@ -35,9 +35,13 @@
 //   只是**理由**要改成「本仓没有可加载的产物」。
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = process.cwd()
+// ⚠ 根目录从本文件位置推导，不用 process.cwd()：本 spec 是自守的，可能在任意挂载点
+// 被跑——本仓自己（cwd=本仓根），也可能被消费者仓的根 vitest 收进去
+// （外部 DSH 定制仓 的 include 是 packages/*/tests/**，cwd=消费者仓根，manifest 会读错）。
+const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '')
 /** 以 `-vendor.N` 结尾是这套设计的核心约定，不能改成裸版本号。 */
 const VENDOR_SUFFIX = /-vendor\.\d+$/
 const baseVersion = (version: string): string => version.replace(VENDOR_SUFFIX, '')
