@@ -5,7 +5,7 @@
 > **一句话定位**：本仓**只服务构建期**——给 typert 代码生成器提供协议的 TypeScript
 > 源码。**运行期一律走 npm 那份**，本仓不参与、也不可能有产物。
 >
-> 所有需要 typert codegen 的外部 DSH 仓库（外部 DSH 定制仓 及后续），都以 git submodule 把
+> 所有需要 typert codegen 的外部 DSH 仓库，都以 git submodule 把
 > 本仓挂载到自己的 `packages/protocol`，统一从这里同步上游、维护版本。
 
 ## 消费方接入（每个需要 codegen 的外部 DSH 仓库）
@@ -29,7 +29,7 @@ git submodule add git@github.com:dreamariner/dsh-typert-protocol.git packages/pr
 1. **根 `tsconfig.json` exclude 本目录**：进根程序会与 npm 协议包 d.ts 的同名 Context 增强撞车（TS2717 双重声明）。它只属于生成器 face program。
 2. **`tsconfig.host.json` 两条**：`paths` 把 `@deepseek-ai/dsh-typert-protocol` 重定向到 `./packages/protocol/src/index.ts`（仅生成器 face program 生效）+ `references` 指向 `packages/protocol`（构成 workspace registration）。
 3. **消费者包把 npm 协议包 pin 成精确版本**：`devDependencies` 写 `0.2.1-rc.3` 这种裸精确版本（不含 `^ ~ >=`）。放宽成范围会让本仓版本变成合法候选（原因见下节 semver 细节）。
-4. **消费者仓自己的守卫 spec**：参考 外部 DSH 定制仓 的 `scripts/tests/protocol-vendor.spec.ts`——断言后缀、精确 pin、运行期解析不落 vendor 目录。本仓的 `tests/protocol-vendor.spec.ts` 只守本仓自身形态，管不到消费者的 manifest。
+4. **消费者仓自己的守卫 spec**：断言后缀、精确 pin、运行期解析不落 vendor 目录（清单见文末「自守护卫」节）。本仓的 `tests/protocol-vendor.spec.ts` 只守本仓自身形态，管不到消费者的 manifest。
 
 ## 为什么存在（构建期刚需，跑不掉）
 
@@ -38,7 +38,7 @@ typert 生成器（`@deepseek-ai/dsh-typert-generator`）的 `isTypeMetaSymbol` 
 1. 名为 `@deepseek-ai/dsh-typert-protocol` 的 **workspace registration**（`tsconfig.host.json` projectReferences 且位于 `<root>/packages/` 下）；
 2. `declare module "@deepseek-ai/dsh-typert-protocol"` ambient 声明内部。
 
-npm 安装的协议包在 node_modules 里，两条都不满足 → `collectInvocations` 收不到任何 `@Remote` 方法 → `typert.remote-client.*` 产物不生成（外部 DSH 定制仓 issue 007 Phase 5 的 invocations=0 根因）。官方 monorepo 里协议包本就是 workspace 成员，本仓把等价结构复刻给外部仓库。
+npm 安装的协议包在 node_modules 里，两条都不满足 → `collectInvocations` 收不到任何 `@Remote` 方法 → `typert.remote-client.*` 产物不生成（外部仓库跑 typert 的 invocations=0 根因）。官方 monorepo 里协议包本就是 workspace 成员，本仓把等价结构复刻给外部仓库。
 
 > 上游**没有**为「外部仓库跑 typert 生成」提供任何官方流程（`typertPlugin` 的选项只有
 > `mode` 与 `faces`，没有 `includeVendor`；生成路径 `loadRegistrations()` 也不含
@@ -91,4 +91,4 @@ git commit && git push                       # 建议打 tag：<version>
 
 ① 版本号带 `-vendor.N` 后缀（**reinstall 之前就能拦住灾难的一条**：后缀一去掉，消费者仓运行期会被 `linkWorkspacePackages` 链到本仓 → 本仓没有 `lib/` 产物 → 插件 import 加载失败 → **插件凭空消失**）；② `private: true`（永不发布 npm）；③ manifest 是官方形态 exports（`.`/`./types`/`./src/*`/`./package.json`）；④ manifest 无 `./typert` 导出面；⑤ 没有 build/prepare 脚本、没有 `lib/` 产物；⑥ LICENSE 在；⑦ 给了 `DSH_CHECKOUT` 时：src/ 与上游**逐字节**一致 + 版本主段一致（裸 clone / CI 自动跳过）。
 
-消费者仓侧另有自己的 spec（外部 DSH 定制仓：`scripts/tests/protocol-vendor.spec.ts`）守：消费者包精确 pin、运行期解析不落 vendor 目录且版本等于 npm 主版本、vendor 版本主段跟得上已安装 npm 版本。
+消费者仓侧另有自己的 spec 守：消费者包精确 pin、运行期解析不落 vendor 目录且版本等于 npm 主版本、vendor 版本主段跟得上已安装 npm 版本。

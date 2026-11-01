@@ -21,7 +21,7 @@
 // typert 生成器的 `isTypeMetaSymbol` 只认两类协议声明来源：名为
 // `@deepseek-ai/dsh-typert-protocol` 的 **workspace registration**，或同名 ambient
 // 声明。npm 安装的协议包在 node_modules 里，两条都不满足 → 生成器收不到任何
-// `@Remote` 方法 → `typert.remote-client.*` 产物不生成（外部 DSH 定制仓 issue 007 P5 的
+// `@Remote` 方法 → `typert.remote-client.*` 产物不生成（外部仓库跑 typert 的
 // invocations=0）。官方 monorepo 里协议包本就是 workspace 成员；外部仓库只能复刻一份。
 //
 // ## 运行期：本仓**不参与**
@@ -42,7 +42,7 @@
 // ## 同步完之后
 //
 // 本仓：`pnpm test`（自守护栏）→ commit + push（带版本号 tag 更佳）。
-// 消费者仓（外部 DSH 定制仓 等）：更新 submodule 指针到新 commit → 消费者侧验证
+// 各消费者仓：更新 submodule 指针到新 commit → 消费者侧验证
 // （typert 产物比对 + 全量测试，见各消费者仓的 protocol-vendor.spec.ts）。
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'

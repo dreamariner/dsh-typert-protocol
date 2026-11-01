@@ -2,7 +2,7 @@
 //
 // 背景：本仓是 `@deepseek-ai/dsh-typert-protocol` 的**声明源 vendor**（pinned source），
 // 只服务构建期——给 typert 代码生成器提供协议的 TypeScript 源码。运行期一律走 npm 那份。
-// 所有需要 typert codegen 的外部 DSH 仓库（外部 DSH 定制仓 等）以 git submodule 把本仓挂载到
+// 所有需要 typert codegen 的外部 DSH 仓库以 git submodule 把本仓挂载到
 // 自己的 `packages/protocol`。生成器不认 node_modules 里的协议包（只认 workspace
 // registration，见 analyzer.ts:476-500 loadRegistrations + :1975-1990 isTypeMetaSymbol）。
 //
@@ -15,7 +15,7 @@
 //      是一个标识符），数字标识符小于字符串标识符 → **本仓版本比 npm 版本「更新」**，
 //      它**满足** `>=0.2.1-rc.3 <0.3.0-0`（消费者包的 peer 范围）。
 //      所以真正的防线是「消费者包 devDep 用精确版本」——那由**消费者仓自己的**
-//      protocol-vendor.spec.ts 断言（外部 DSH 定制仓：scripts/tests/protocol-vendor.spec.ts），
+//      protocol-vendor.spec.ts 断言（各消费方仓内的同款 spec），
 //      本仓管不到消费者的 manifest，只管自己的后缀。
 //   ② 生成器 face program 的 paths 重定向只对生成器生效（消费者仓 tsconfig.host.json）。
 //
@@ -40,7 +40,7 @@ import { fileURLToPath } from 'node:url'
 
 // ⚠ 根目录从本文件位置推导，不用 process.cwd()：本 spec 是自守的，可能在任意挂载点
 // 被跑——本仓自己（cwd=本仓根），也可能被消费者仓的根 vitest 收进去
-// （外部 DSH 定制仓 的 include 是 packages/*/tests/**，cwd=消费者仓根，manifest 会读错）。
+// （消费者的根 vitest 常以 packages/*/tests/** 收编本 spec，cwd=消费者仓根，manifest 会读错）。
 const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '')
 /** 以 `-vendor.N` 结尾是这套设计的核心约定，不能改成裸版本号。 */
 const VENDOR_SUFFIX = /-vendor\.\d+$/
