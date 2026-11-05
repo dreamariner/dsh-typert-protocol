@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-typert-protocol",
   "description": "pinned-source vendor：DSH Typert 协议包（声明源），供 @deepseek-ai/dsh-typert-generator 的 workspace 识别使用（官方形态复刻，见 README）",
-  "version": "0.2.1-rc.3-vendor.0",
+  "version": "0.2.2-rc.1-vendor.0",
   "private": true,
   "type": "module",
   "main": "lib/index.js",
